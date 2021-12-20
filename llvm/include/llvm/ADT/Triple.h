@@ -215,6 +215,7 @@ public:
     Contiki,
     AMDPAL,     // AMD PAL Runtime
     HermitCore, // HermitCore Unikernel/Multikernel
+	Twizzler,
     Hurd,       // GNU/Hurd
     WASI,       // Experimental WebAssembly OS
     Emscripten,
