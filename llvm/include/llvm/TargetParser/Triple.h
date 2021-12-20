@@ -206,6 +206,7 @@ public:
     DragonFly,
     FreeBSD,
     Fuchsia,
+    Twizzler,
     IOS,
     KFreeBSD,
     Linux,
