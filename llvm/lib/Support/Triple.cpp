@@ -219,6 +219,7 @@ StringRef Triple::getOSTypeName(OSType Kind) {
   case RTEMS: return "rtems";
   case Solaris: return "solaris";
   case TvOS: return "tvos";
+  case Twizzler: return "twizzler";
   case WASI: return "wasi";
   case WatchOS: return "watchos";
   case Win32: return "windows";
@@ -535,6 +536,7 @@ static Triple::OSType parseOS(StringRef OSName) {
     .StartsWith("contiki", Triple::Contiki)
     .StartsWith("amdpal", Triple::AMDPAL)
     .StartsWith("hermit", Triple::HermitCore)
+	.StartsWith("twizzler", Triple::Twizzler)
     .StartsWith("hurd", Triple::Hurd)
     .StartsWith("wasi", Triple::WASI)
     .StartsWith("emscripten", Triple::Emscripten)
