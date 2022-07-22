@@ -130,7 +130,7 @@ template <class ELFT> RelsOrRelas<ELFT> InputSectionBase::relsOrRelas() const {
     return {};
   RelsOrRelas<ELFT> ret;
   typename ELFT::Shdr shdr =
-      cast<ELFFileBase>(file)->getELFShdrs<ELFT>()[relSecIdx];
+      cast<ELFFileBase>(file)->template getELFShdrs<ELFT>()[relSecIdx];
   if (shdr.sh_type == SHT_REL) {
     ret.rels = makeArrayRef(reinterpret_cast<const typename ELFT::Rel *>(
                                 file->mb.getBufferStart() + shdr.sh_offset),
@@ -413,7 +413,7 @@ void InputSection::copyRelocations(uint8_t *buf, ArrayRef<RelTy> rels) {
         // individual "gp" values used by each input object file.
         // As a workaround we add the "gp" value to the relocation
         // addend and save it back to the file.
-        addend += sec->getFile<ELFT>()->mipsGp0;
+        addend += sec->template getFile<ELFT>()->mipsGp0;
       }
 
       if (RelTy::IsRela)
@@ -963,9 +963,9 @@ void InputSectionBase::relocate(uint8_t *buf, uint8_t *bufEnd) {
   // locations with tombstone values.
   const RelsOrRelas<ELFT> rels = sec->template relsOrRelas<ELFT>();
   if (rels.areRelocsRel())
-    sec->relocateNonAlloc<ELFT>(buf, rels.rels);
+    sec->template relocateNonAlloc<ELFT>(buf, rels.rels);
   else
-    sec->relocateNonAlloc<ELFT>(buf, rels.relas);
+    sec->template relocateNonAlloc<ELFT>(buf, rels.relas);
 }
 
 void InputSectionBase::relocateAlloc(uint8_t *buf, uint8_t *bufEnd) {
@@ -1172,7 +1172,8 @@ void InputSectionBase::adjustSplitStackFunctionPrologues(uint8_t *buf,
     // conservative.
     if (Defined *d = dyn_cast<Defined>(rel.sym))
       if (InputSection *isec = cast_or_null<InputSection>(d->section))
-        if (!isec || !isec->getFile<ELFT>() || isec->getFile<ELFT>()->splitStack)
+        if (!isec || !isec->template getFile<ELFT>() ||
+            isec->template getFile<ELFT>()->splitStack)
           continue;
 
     if (enclosingPrologueAttempted(rel.offset, prologues))

@@ -197,7 +197,7 @@ std::unique_ptr<MipsOptionsSection<ELFT>> MipsOptionsSection<ELFT>::create() {
       auto *opt = reinterpret_cast<const Elf_Mips_Options *>(d.data());
       if (opt->kind == ODK_REGINFO) {
         reginfo.ri_gprmask |= opt->getRegInfo().ri_gprmask;
-        sec->getFile<ELFT>()->mipsGp0 = opt->getRegInfo().ri_gp_value;
+        sec->template getFile<ELFT>()->mipsGp0 = opt->getRegInfo().ri_gp_value;
         break;
       }
 
@@ -249,7 +249,7 @@ std::unique_ptr<MipsReginfoSection<ELFT>> MipsReginfoSection<ELFT>::create() {
 
     auto *r = reinterpret_cast<const Elf_Mips_RegInfo *>(sec->rawData.data());
     reginfo.ri_gprmask |= r->ri_gprmask;
-    sec->getFile<ELFT>()->mipsGp0 = r->ri_gp_value;
+    sec->template getFile<ELFT>()->mipsGp0 = r->ri_gp_value;
   };
 
   return std::make_unique<MipsReginfoSection<ELFT>>(reginfo);
@@ -3360,7 +3360,7 @@ template <class ELFT> void elf::splitSections() {
       if (auto *s = dyn_cast<MergeInputSection>(sec))
         s->splitIntoPieces();
       else if (auto *eh = dyn_cast<EhInputSection>(sec))
-        eh->split<ELFT>();
+        eh->template split<ELFT>();
     }
   });
 }

@@ -185,14 +185,14 @@ template <class ELFT> static void doParseFile(InputFile *file) {
 
   // .so file
   if (auto *f = dyn_cast<SharedFile>(file)) {
-    f->parse<ELFT>();
+    f->template parse<ELFT>();
     return;
   }
 
   // LLVM bitcode file
   if (auto *f = dyn_cast<BitcodeFile>(file)) {
     ctx->bitcodeFiles.push_back(f);
-    f->parse<ELFT>();
+    f->template parse<ELFT>();
     return;
   }
 

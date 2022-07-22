@@ -618,9 +618,9 @@ static bool relax(InputSection &sec) {
         valueDelta[sa[0].d] = delta;
     delta = aux.relocDeltas[it.index()];
   }
-  for (const SymbolAnchor &sa : sa)
-    if (!sa.end)
-      valueDelta[sa.d] = delta;
+  for (const SymbolAnchor &saElem : sa)
+    if (!saElem.end)
+      valueDelta[saElem.d] = delta;
   sa = makeArrayRef(aux.anchors);
   delta = 0;
 
