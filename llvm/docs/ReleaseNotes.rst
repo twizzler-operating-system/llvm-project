@@ -56,7 +56,7 @@ to build LLVM. The new requirements are as follows:
 * Visual Studio 2019 >= 16.7
 
 In LLVM 15.x these requirements will be "soft" requirements and the version
-check can be skipped by passing -DLLVM_TEMPORARILY_ALLOW_OLD_TOOLCHAIN=ON
+check can be skipped by passing ``-DLLVM_TEMPORARILY_ALLOW_OLD_TOOLCHAIN=ON``
 to CMake.
 
 With the release of LLVM 16.x these requirements will be hard and LLVM developers
@@ -74,6 +74,7 @@ Changes to the LLVM IR
 * Renamed ``llvm.experimental.vector.insert`` intrinsic to ``llvm.vector.insert``.
 * The constant expression variants of the following instructions have been
   removed:
+
   * ``extractvalue``
   * ``insertvalue``
   * ``udiv``
@@ -85,6 +86,7 @@ Changes to the LLVM IR
   * ``fmul``
   * ``fdiv``
   * ``frem``
+
 * Added the support for ``fmax`` and ``fmin`` in ``atomicrmw`` instruction. The
   comparison is expected to match the behavior of ``llvm.maxnum.*`` and
   ``llvm.minnum.*`` respectively.
@@ -115,6 +117,12 @@ Changes to building LLVM
 Changes to TableGen
 -------------------
 
+Changes to Loop Optimizations
+-----------------------------
+
+* Loop interchange legality and cost model improvements
+
+
 Changes to the AArch64 Backend
 ------------------------------
 
@@ -140,7 +148,7 @@ Changes to the ARM Backend
 * Implemented generation of Windows SEH unwind information.
 * Switched the MinGW target to use SEH instead of DWARF for unwind information.
 * Added support for the Cortex-M85 CPU.
-* Added support for a new -mframe-chain=(none|aapcs|aapcs+leaf) command-line
+* Added support for a new ``-mframe-chain=(none|aapcs|aapcs+leaf)`` command-line
   option, which controls the generation of AAPCS-compliant Frame Records.
 
 Changes to the AVR Backend
@@ -171,7 +179,25 @@ Changes to the MIPS Backend
 Changes to the PowerPC Backend
 ------------------------------
 
-* ...
+Common PowerPC improvements:
+* Add a new post instruction selection pass to generate CTR loops.
+* Add SSE4 and BMI compatible intrinsics implementation.
+* Supported 16-byte lock free atomics on PowerPC8 and up.
+* Supported atomic load/store for pointer types.
+* Supported stack size larger than 2G
+* Add __builtin_min/__builtin_max/__abs builtins.
+* Code generation improvements for splat load/vector shuffle/mulli, etc.
+* Emit VSX instructions for vector loads and stores regardless of alignment.
+* The mcpu=future has its own ISA now (FutureISA).
+* Added the ppc-set-dscr option to set the Data Stream Control Register (DSCR).
+* Bug fixes.
+
+AIX improvements:
+* Supported 64 bit XCOFF for integrated-as path.
+* Supported X86-compatible vector intrinsics.
+* Program code csect default alignment now is 32-byte.
+* Supported auxiliary header in integrated-as path.
+* Improved alias symbol handling.
 
 Changes to the RISC-V Backend
 -----------------------------
@@ -197,9 +223,9 @@ The change may affect the current use of ``half`` includes (but is not limited
 to):
 
 * Frontends generating ``half`` type in function passing and/or returning
-arguments.
+  arguments.
 * Downstream runtimes providing any ``half`` conversion builtins assuming the
-old ABI.
+  old ABI.
 * Projects built with LLVM 15.0 but using early versions of compiler-rt.
 
 When you find failures with ``half`` type, check the calling conversion of the
@@ -227,6 +253,7 @@ Changes to the C API
   because the underlying constant expressions are no longer supported. Instead,
   an instruction should be created using the ``LLVMBuildXYZ`` APIs, which will
   constant fold the operands if possible and create an instruction otherwise:
+
   * ``LLVMConstExtractValue``
   * ``LLVMConstInsertValue``
   * ``LLVMConstUDiv``
@@ -246,6 +273,7 @@ Changes to the C API
 
 * As part of the opaque pointer migration, the following APIs are deprecated and
   will be removed in the next release:
+
   * ``LLVMBuildLoad`` -> ``LLVMBuildLoad2``
   * ``LLVMBuildCall`` -> ``LLVMBuildCall2``
   * ``LLVMBuildInvoke`` -> ``LLVMBuildInvoke2``
@@ -260,6 +288,7 @@ Changes to the C API
 * Refactor compression namespaces across the project, making way for a possible
   introduction of alternatives to zlib compression in the llvm toolchain.
   Changes are as follows:
+
   * Relocate the ``llvm::zlib`` namespace to ``llvm::compression::zlib``.
   * Remove crc32 from zlib compression namespace, people should use the ``llvm::crc32`` instead.
 
@@ -290,14 +319,31 @@ During this release ...
 Changes to the LLVM tools
 ---------------------------------
 
-* (Experimental) :manpage:`llvm-symbolizer(1)` now has ``--filter-markup`` to
+* (Experimental) :doc:`llvm-symbolizer <CommandGuide/llvm-symbolizer>` now has ``--filter-markup`` to
   filter :doc:`Symbolizer Markup </SymbolizerMarkupFormat>` into human-readable
   form.
 * :doc:`llvm-objcopy <CommandGuide/llvm-objcopy>` has removed support for the legacy ``zlib-gnu`` format.
 * :doc:`llvm-objcopy <CommandGuide/llvm-objcopy>` now allows ``--set-section-flags src=... --rename-section src=tst``.
   ``--add-section=.foo1=... --rename-section=.foo1=.foo2`` now adds ``.foo1`` instead of ``.foo2``.
+* New features supported on AIX for ``llvm-ar``:
+
+  * AIX big-format archive write operation (`D123949 <https://reviews.llvm.org/D123949>`_)
+
+  * A new object mode option, ``-X`` , to specify the type of object file ``llvm-ar`` should operate upon (`D127864 <https://reviews.llvm.org/D127864>`_)
+
+  * Read global symbols of AIX big archive (`D124865 <https://reviews.llvm.org/D124865>`_)
+
+* New options supported for ``llvm-nm``:
+
+  * ``-X``, to specify the type of object file that ``llvm-nm`` should examine (`D118193 <https://reviews.llvm.org/D118193>`_)
+
+  * ``--export-symbols``, to create a list of symbols to export (`D112735 <https://reviews.llvm.org/D112735>`_)
+
 * The LLVM gold plugin now ignores bitcode from the ``.llvmbc`` section of ELF
   files when doing LTO.  https://github.com/llvm/llvm-project/issues/47216
+* llvm-objcopy now supports 32 bit XCOFF.
+* llvm-objdump: improved assembly printing for XCOFF.
+* llc now parses code-model attribute from input file.
 
 Changes to LLDB
 ---------------------------------
@@ -342,6 +388,14 @@ Other Changes
   <https://marketplace.visualstudio.com/items?itemName=LLVMExtensions.llvm-toolchain>`_
   has been removed. This had been obsolete and abandoned since Visual Studio
   started including an integration by default in 2019.
+
+* Added the unwinder, personality, and helper functions for exception handling
+  on AIX. (`D100132 <https://reviews.llvm.org/D100132>`_)
+  (`D100504 <https://reviews.llvm.org/D100504>`_)
+
+* PGO on AIX: A new implementation that requires linker support
+  (__start_SECTION/__stop_SECTION symbols) available on AIX 7.2 TL5 SP4 and
+  AIX 7.3 TL0 SP2.
 
 External Open Source Projects Using LLVM 15
 ===========================================

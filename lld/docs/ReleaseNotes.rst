@@ -25,6 +25,8 @@ Non-comprehensive list of changes in this release
 
 ELF Improvements
 ----------------
+* ``--package-metadata=`` has been added to create package metadata notes
+  (`D131439 <https://reviews.llvm.org/D131439>`_)
 
 * ``-z pack-relative-relocs`` is now available to support ``DT_RELR`` for glibc 2.36+.
   (`D120701 <https://reviews.llvm.org/D120701>`_)
@@ -85,13 +87,18 @@ MinGW Improvements
 
 * The ``--disable-reloc-section`` option is now supported.
   (`D127478 <https://reviews.llvm.org/D127478>`_)
+* The ``--exclude-symbols`` option is now supported.
+  (`D130118 <https://reviews.llvm.org/D130118>`_)
+
+* Support for an entirely new object file directive, ``-exclude-symbols:``,
+  has been implemented. (`D130120 <https://reviews.llvm.org/D130120>`_)
 
 MachO Improvements
 ------------------
 
 * We now support proper relocation and pruning of EH frames. **Note:** this
   comes at some performance overhead on x86_64 builds, and we recommend adding
-  the ``-femit-compact-unwind=no-compact-unwind`` compile flag to avoid it.
+  the ``-femit-dwarf-unwind=no-compact-unwind`` compile flag to avoid it.
   (`D129540 <https://reviews.llvm.org/D129540>`_,
   `D122258 <https://reviews.llvm.org/D122258>`_)
 
@@ -205,6 +212,8 @@ Fixes
   errors. (`D122624 <https://reviews.llvm.org/D122624>`_)
 * Fixed handling of relocatable object files within frameworks.
   (`D114841 <https://reviews.llvm.org/D114841>`_)
+* Fixed the PPC64R2SaveStub to only use non-pc-relative code.
+  (`D129580 <https://reviews.llvm.org/D129580>`_)
 
 WebAssembly Improvements
 ------------------------
