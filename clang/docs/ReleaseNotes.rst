@@ -8,13 +8,6 @@ Clang |release| |ReleaseNotesTitle|
 
 Written by the `LLVM Team <https://llvm.org/>`_
 
-.. only:: PreRelease
-
-  .. warning::
-     These are in-progress notes for the upcoming Clang |version| release.
-     Release notes for previous releases can be found on
-     `the Download Page <https://releases.llvm.org/download.html>`_.
-
 Introduction
 ============
 
@@ -43,6 +36,22 @@ Some of the major new features and improvements to Clang are listed
 here. Generic improvements to Clang as a whole or to its underlying
 infrastructure are described first, followed by language-specific
 sections with improvements to Clang's support for those languages.
+
+Potentially Breaking Changes
+============================
+These changes are ones which we think may surprise users when upgrading to
+Clang |release| because of the opportunity they pose for disruption to existing
+code bases.
+
+- The ``-Wimplicit-function-declaration`` and ``-Wimplicit-int`` warning
+  diagnostics are now enabled by default in C99, C11, and C17. As of C2x,
+  support for implicit function declarations and implicit int has been removed,
+  and the warning options will have no effect. Specifying ``-Wimplicit-int`` in
+  C89 mode will now issue warnings instead of being a noop.
+  *NOTE* these warnings are expected to default to an error in Clang 16. We
+  recommend that projects using configure scripts verify the results do not
+  change before/after setting ``-Werror=implicit-function-declarations`` or
+  ``-Wimplicit-int`` to avoid incompatibility with Clang 16.
 
 Major New Features
 ------------------
@@ -213,6 +222,9 @@ Bug Fixes
   missing when used, or vice versa. This makes sure that Clang picks the
   correct one, where it previously would consider multiple ones as potentially
   acceptable (and erroneously use whichever one is tried first).
+- Fix a crash when generating code coverage information for an
+  ``if consteval`` statement. This fixes
+  `Issue 57377 <https://github.com/llvm/llvm-project/issues/57377>`_.
 
 Improvements to Clang's diagnostics
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -249,18 +261,6 @@ Improvements to Clang's diagnostics
   without a prototype and with no arguments is an invalid redeclaration of a
   function with a prototype. e.g., ``void f(int); void f() {}`` is now properly
   diagnosed.
-- The ``-Wimplicit-function-declaration`` warning diagnostic now defaults to
-  an error in C99 and later. Prior to C2x, it may be downgraded to a warning
-  with ``-Wno-error=implicit-function-declaration``, or disabled entirely with
-  ``-Wno-implicit-function-declaration``. As of C2x, support for implicit
-  function declarations has been removed, and the warning options will have no
-  effect.
-- The ``-Wimplicit-int`` warning diagnostic now defaults to an error in C99 and
-  later. Prior to C2x, it may be downgraded to a warning with
-  ``-Wno-error=implicit-int``, or disabled entirely with ``-Wno-implicit-int``.
-  As of C2x, support for implicit int has been removed, and the warning options
-  will have no effect. Specifying ``-Wimplicit-int`` in C89 mode will now issue
-  warnings instead of being a noop.
 - No longer issue a "declaration specifiers missing, defaulting to int"
   diagnostic in C89 mode because it is not an extension in C89, it was valid
   code. The diagnostic has been removed entirely as it did not have a
@@ -549,6 +549,12 @@ C++20 Feature Support
 - As per "Conditionally Trivial Special Member Functions" (P0848), it is
   now possible to overload destructors using concepts. Note that the rest
   of the paper about other special member functions is not yet implemented.
+- Skip rebuilding lambda expressions in arguments of immediate invocations.
+  This fixes `GH56183 <https://github.com/llvm/llvm-project/issues/56183>`_,
+  `GH51695 <https://github.com/llvm/llvm-project/issues/51695>`_,
+  `GH50455 <https://github.com/llvm/llvm-project/issues/50455>`_,
+  `GH54872 <https://github.com/llvm/llvm-project/issues/54872>`_,
+  `GH54587 <https://github.com/llvm/llvm-project/issues/54587>`_.
 
 C++2b Feature Support
 ^^^^^^^^^^^^^^^^^^^^^
@@ -668,6 +674,20 @@ Arm and AArch64 Support in Clang
   ``svint32_t``. The set of supported operators is shown in the table Vector
   Operations found in the :ref:`Clang Language Extensions <Vector Operations>`
   document.
+
+RISC-V Support in Clang
+-----------------------
+
+- Updates to the RISC-V vector intrinsics to align with ongoing additions to
+  the RISC-V Vector intrinsics specification. Additionally, these intrinsics
+  are now generated lazily, resulting a substantial improvement in
+  compile-time for code including the vector intrinsics header.
+- Intrinsics added for the RISC-V scalar crypto ('K') extensions.
+- Intrinsics added for the RISC-V CLZ and CTZ instructions in the Zbb
+  extension.
+- An ABI lowering bug (resulting in incorrect LLVM IR generation) was fixed.
+  The bug could be triggered in particular circumstances in C++ when passing a
+  data-only struct that inherits from another struct.
 
 SPIR-V Support in Clang
 -----------------------
