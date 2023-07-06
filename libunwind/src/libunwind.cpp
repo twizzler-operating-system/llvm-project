@@ -14,7 +14,7 @@
 #include "libunwind_ext.h"
 #include "config.h"
 
-#include <stdlib.h>
+#include <stddef.h>
 
 // Define the __has_feature extension for compilers that do not support it so
 // that we can later check for the presence of ASan in a compiler-neutral way.
