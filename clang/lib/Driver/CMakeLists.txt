@@ -83,6 +83,7 @@ add_clang_library(clangDriver
   ToolChains/Solaris.cpp
   ToolChains/SPIRV.cpp
   ToolChains/TCE.cpp
+  ToolChains/Twizzler.cpp
   ToolChains/VEToolchain.cpp
   ToolChains/WebAssembly.cpp
   ToolChains/XCore.cpp

@@ -908,6 +908,38 @@ public:
   }
 };
 
+// Twizzler Target
+
+template<typename Target>
+class LLVM_LIBRARY_VISIBILITY TwizzlerTargetInfo : public OSTargetInfo<Target> {
+ protected:
+  void getOSDefines(const LangOptions &Opts, const llvm::Triple &Triple,
+                    MacroBuilder &Builder) const override {
+    Builder.defineMacro("__Twizzler__");
+    Builder.defineMacro("__ELF__");
+    if (Opts.POSIXThreads)
+      Builder.defineMacro("_REENTRANT");
+    // Required by the libc++ locale support.
+    if (Opts.CPlusPlus)
+      Builder.defineMacro("_GNU_SOURCE");
+    this->PlatformName = "twizzler";
+  }
+ 
+ public:
+   TwizzlerTargetInfo(const llvm::Triple &Triple, const TargetOptions &Opts)
+       : OSTargetInfo<Target>(Triple, Opts) {
+     this->WIntType = TargetInfo::UnsignedInt;
+     switch (Triple.getArch()) {
+      default:
+        break;
+      case llvm::Triple::x86:
+      case llvm::Triple::x86_64:
+        this->HasFloat128 = true;
+        break;
+     }
+   }
+};
+
 // WebAssembly target
 template <typename Target>
 class LLVM_LIBRARY_VISIBILITY WebAssemblyOSTargetInfo
