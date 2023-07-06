@@ -151,6 +151,9 @@ std::unique_ptr<TargetInfo> AllocateTarget(const llvm::Triple &Triple,
     case llvm::Triple::Haiku:
       return std::make_unique<HaikuTargetInfo<AArch64leTargetInfo>>(Triple,
                                                                     Opts);
+    case llvm::Triple::Twizzler:
+      return std::make_unique<TwizzlerTargetInfo<AArch64leTargetInfo>>(Triple, Opts);
+
     case llvm::Triple::Linux:
       switch (Triple.getEnvironment()) {
       default:
@@ -618,7 +621,8 @@ std::unique_ptr<TargetInfo> AllocateTarget(const llvm::Triple &Triple,
                                                                    Opts);
     case llvm::Triple::Fuchsia:
       return std::make_unique<FuchsiaTargetInfo<X86_64TargetInfo>>(Triple,
-                                                                   Opts);
+    case llvm::Triple::Twizzler:
+      return new TwizzlerTargetInfo<X86_64TargetInfo>(Triple, Opts);
     case llvm::Triple::KFreeBSD:
       return std::make_unique<KFreeBSDTargetInfo<X86_64TargetInfo>>(Triple,
                                                                     Opts);
