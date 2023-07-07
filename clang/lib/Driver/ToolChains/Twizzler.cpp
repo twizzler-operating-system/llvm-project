@@ -424,6 +424,7 @@ void Twizzler::AddCXXStdlibLibArgs(const ArgList &Args,
 }
 
 SanitizerMask Twizzler::getSupportedSanitizers() const {
+  // FIXME (dbittman): Re-enable the sanitizers.
   SanitizerMask Res = ToolChain::getSupportedSanitizers();
   //Res |= SanitizerKind::Address;
   //Res |= SanitizerKind::HWAddress;
@@ -439,13 +440,14 @@ SanitizerMask Twizzler::getSupportedSanitizers() const {
 }
 
 SanitizerMask Twizzler::getDefaultSanitizers() const {
+  // FIXME (dbittman): Re-enable the sanitizers.
   SanitizerMask Res;
   switch (getTriple().getArch()) {
   case llvm::Triple::aarch64:
-    Res |= SanitizerKind::ShadowCallStack;
+    //Res |= SanitizerKind::ShadowCallStack;
     break;
   case llvm::Triple::x86_64:
-    Res |= SanitizerKind::SafeStack;
+    //Res |= SanitizerKind::SafeStack;
     break;
   default:
     // TODO: Enable SafeStack on RISC-V once tested.
