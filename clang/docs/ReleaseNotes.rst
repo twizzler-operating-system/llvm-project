@@ -921,6 +921,8 @@ LoongArch Support
 
 - Patchable function entry (``-fpatchable-function-entry``) is now supported
   on LoongArch.
+- An ABI mismatch between GCC and Clang related to the handling of empty structs
+  in C++ parameter passing under ``lp64d`` ABI was fixed.
 - Unaligned memory accesses can be toggled by ``-m[no-]unaligned-access`` or the
   aliases ``-m[no-]strict-align``.
 - Non ``$``-prefixed GPR names (e.g. ``r4`` and ``a0``) are allowed in inlineasm
@@ -960,6 +962,10 @@ RISC-V Support
   * Added intrinsics for reinterpret cast between vector boolean and vector
     integer ``m1`` value
   * Removed the ``vread_csr`` and ``vwrite_csr`` intrinsics
+- Default ``-fdebug-dwarf-version=`` is downgraded to 4 to work around
+  incorrect DWARF related to ULEB128 and linker compatibility before
+  ``R_RISCV_SET_ULEB128`` becomes more widely supported.
+  (`D157663 <https://reviews.llvm.org/D157663>`_).
 
 CUDA/HIP Language Changes
 ^^^^^^^^^^^^^^^^^^^^^^^^^

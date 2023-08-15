@@ -1863,15 +1863,10 @@ void Clang::AddLoongArchTargetArgs(const ArgList &Args,
 
   // Handle -mtune.
   if (const Arg *A = Args.getLastArg(options::OPT_mtune_EQ)) {
-    StringRef TuneCPU = A->getValue();
-    if (TuneCPU == "native") {
-      TuneCPU = llvm::sys::getHostCPUName();
-      if (TuneCPU == "generic")
-        TuneCPU = llvm::LoongArch::getDefaultArch(Triple.isLoongArch64());
-    }
+    std::string TuneCPU = A->getValue();
+    TuneCPU = loongarch::postProcessTargetCPUString(TuneCPU, Triple);
     CmdArgs.push_back("-tune-cpu");
     CmdArgs.push_back(Args.MakeArgString(TuneCPU));
-    llvm::LoongArch::setTuneCPU(TuneCPU);
   }
 }
 

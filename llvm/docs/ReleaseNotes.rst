@@ -152,9 +152,6 @@ Changes to the AMDGPU Backend
   improves the interaction between AMDGPU buffer operations and the LLVM memory
   model, and so the non `.ptr` intrinsics are deprecated.
 
-* SGPR spilling is now performed to virtual VGPRs. This should avoid
-  some assorted register allocation failures.
-
 * Backend now performs range merging of "amdgpu-waves-per-eu" attribute based on
   known callers.
 
@@ -414,6 +411,9 @@ Changes to LLDB
   server tells it. Including but not limited to, the size, where it is read from and
   the fields that the register contains.
 
+* AArch64 Linux targets now provide access to the Thread Local Storage
+  register ``tpidr``.
+
 Changes to Sanitizers
 ---------------------
 * For Darwin users that override weak symbols, note that the dynamic linker will
@@ -431,6 +431,17 @@ Changes to Sanitizers
 
     // Example override
     extern "C" const char *__asan_default_options() { ... }
+
+Changes to BOLT
+---------------
+* Initial RISC-V (RV64GC) target support was added.
+* DWARFRewriter got new mechanism for more flexible handling of debug
+  information. It raises debug information to IR level before performing
+  updates, and IR is written out to the binary after updates are applied.
+* Stale profile matching was added under a flag `--infer-stale-profile`.
+  It requires the use of a YAML profile, produced by perf2bolt using `-w`
+  flag, or with `--profile-format=yaml`.
+
 
 Other Changes
 -------------
