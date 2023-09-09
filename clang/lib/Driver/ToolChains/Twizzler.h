@@ -1,4 +1,5 @@
-//===--- Twizzler.h - Twizzler ToolChain Implementations ----------*- C++ -*-===//
+//===--- Twizzler.h - Twizzler ToolChain Implementations ----------*- C++
+//-*-===//
 //
 // Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
 // See https://llvm.org/LICENSE.txt for license information.
@@ -38,7 +39,7 @@ namespace toolchains {
 class LLVM_LIBRARY_VISIBILITY Twizzler : public ToolChain {
 public:
   Twizzler(const Driver &D, const llvm::Triple &Triple,
-          const llvm::opt::ArgList &Args);
+           const llvm::opt::ArgList &Args);
 
   bool HasNativeLLVMSupport() const override { return true; }
   bool IsIntegratedAssemblerDefault() const override { return true; }
@@ -53,7 +54,7 @@ public:
   bool IsUnwindTablesDefault(const llvm::opt::ArgList &Args) const override {
     return true;
   }
-  bool isPICDefault() const override { return false; }
+  bool isPICDefault() const override { return true; }
   bool isPIEDefault(const llvm::opt::ArgList &Args) const override {
     return true;
   }
