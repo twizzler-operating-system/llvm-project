@@ -621,8 +621,10 @@ std::unique_ptr<TargetInfo> AllocateTarget(const llvm::Triple &Triple,
                                                                    Opts);
     case llvm::Triple::Fuchsia:
       return std::make_unique<FuchsiaTargetInfo<X86_64TargetInfo>>(Triple,
+                                                                   Opts);
     case llvm::Triple::Twizzler:
-      return new TwizzlerTargetInfo<X86_64TargetInfo>(Triple, Opts);
+      return std::make_unique<TwizzlerTargetInfo<X86_64TargetInfo>>(Triple,
+                                                                   Opts);
     case llvm::Triple::KFreeBSD:
       return std::make_unique<KFreeBSDTargetInfo<X86_64TargetInfo>>(Triple,
                                                                     Opts);
