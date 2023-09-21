@@ -10,6 +10,7 @@
 #include "CommonArgs.h"
 #include "clang/Config/config.h"
 #include "clang/Driver/Compilation.h"
+#include "clang/Driver/MultilibBuilder.h"
 #include "clang/Driver/Driver.h"
 #include "clang/Driver/DriverDiagnostic.h"
 #include "clang/Driver/Options.h"
@@ -212,53 +213,53 @@ Twizzler::Twizzler(const Driver &D, const llvm::Triple &Triple,
 
   Multilibs.push_back(Multilib());
   // Use the noexcept variant with -fno-exceptions to avoid the extra overhead.
-  Multilibs.push_back(Multilib("noexcept", {}, {}, 1)
+  Multilibs.push_back(MultilibBuilder("noexcept", {}, {})
                           .flag("-fexceptions")
-                          .flag("+fno-exceptions"));
+                          .flag("+fno-exceptions").makeMultilib());
   // ASan has higher priority because we always want the instrumentated version.
-  Multilibs.push_back(Multilib("asan", {}, {}, 2)
-                          .flag("+fsanitize=address"));
+  Multilibs.push_back(MultilibBuilder("asan", {}, {})
+                          .flag("+fsanitize=address").makeMultilib());
   // Use the asan+noexcept variant with ASan and -fno-exceptions.
-  Multilibs.push_back(Multilib("asan+noexcept", {}, {}, 3)
+  Multilibs.push_back(MultilibBuilder("asan+noexcept", {}, {})
                           .flag("+fsanitize=address")
                           .flag("-fexceptions")
-                          .flag("+fno-exceptions"));
+                          .flag("+fno-exceptions").makeMultilib());
   // HWASan has higher priority because we always want the instrumentated
   // version.
   Multilibs.push_back(
-      Multilib("hwasan", {}, {}, 4).flag("+fsanitize=hwaddress"));
+      MultilibBuilder("hwasan", {}, {}).flag("+fsanitize=hwaddress").makeMultilib());
   // Use the hwasan+noexcept variant with HWASan and -fno-exceptions.
-  Multilibs.push_back(Multilib("hwasan+noexcept", {}, {}, 5)
+  Multilibs.push_back(MultilibBuilder("hwasan+noexcept", {}, {})
                           .flag("+fsanitize=hwaddress")
                           .flag("-fexceptions")
-                          .flag("+fno-exceptions"));
+                          .flag("+fno-exceptions").makeMultilib());
   // Use the relative vtables ABI.
   // TODO: Remove these multilibs once relative vtables are enabled by default
   // for Twizzler.
-  Multilibs.push_back(Multilib("relative-vtables", {}, {}, 6)
-                          .flag("+fexperimental-relative-c++-abi-vtables"));
-  Multilibs.push_back(Multilib("relative-vtables+noexcept", {}, {}, 7)
+  Multilibs.push_back(MultilibBuilder("relative-vtables", {}, {})
+                          .flag("+fexperimental-relative-c++-abi-vtables").makeMultilib());
+  Multilibs.push_back(MultilibBuilder("relative-vtables+noexcept", {}, {})
                           .flag("+fexperimental-relative-c++-abi-vtables")
                           .flag("-fexceptions")
-                          .flag("+fno-exceptions"));
-  Multilibs.push_back(Multilib("relative-vtables+asan", {}, {}, 8)
+                          .flag("+fno-exceptions").makeMultilib());
+  Multilibs.push_back(MultilibBuilder("relative-vtables+asan", {}, {})
                           .flag("+fexperimental-relative-c++-abi-vtables")
-                          .flag("+fsanitize=address"));
-  Multilibs.push_back(Multilib("relative-vtables+asan+noexcept", {}, {}, 9)
+                          .flag("+fsanitize=address").makeMultilib());
+  Multilibs.push_back(MultilibBuilder("relative-vtables+asan+noexcept", {}, {})
                           .flag("+fexperimental-relative-c++-abi-vtables")
                           .flag("+fsanitize=address")
                           .flag("-fexceptions")
-                          .flag("+fno-exceptions"));
-  Multilibs.push_back(Multilib("relative-vtables+hwasan", {}, {}, 10)
+                          .flag("+fno-exceptions").makeMultilib());
+  Multilibs.push_back(MultilibBuilder("relative-vtables+hwasan", {}, {})
                           .flag("+fexperimental-relative-c++-abi-vtables")
-                          .flag("+fsanitize=hwaddress"));
-  Multilibs.push_back(Multilib("relative-vtables+hwasan+noexcept", {}, {}, 11)
+                          .flag("+fsanitize=hwaddress").makeMultilib());
+  Multilibs.push_back(MultilibBuilder("relative-vtables+hwasan+noexcept", {}, {})
                           .flag("+fexperimental-relative-c++-abi-vtables")
                           .flag("+fsanitize=hwaddress")
                           .flag("-fexceptions")
-                          .flag("+fno-exceptions"));
+                          .flag("+fno-exceptions").makeMultilib());
   // Use Itanium C++ ABI for the compat multilib.
-  Multilibs.push_back(Multilib("compat", {}, {}, 12).flag("+fc++-abi=itanium"));
+  Multilibs.push_back(MultilibBuilder("compat", {}, {}).flag("+fc++-abi=itanium").makeMultilib());
 
   Multilibs.FilterOut([&](const Multilib &M) {
     std::vector<std::string> RD = FilePaths(M);
@@ -284,12 +285,17 @@ Twizzler::Twizzler(const Driver &D, const llvm::Triple &Triple,
 
   Multilibs.setFilePathsCallback(FilePaths);
 
-  if (Multilibs.select(Flags, SelectedMultilib))
-    if (!SelectedMultilib.isDefault())
+  if (Multilibs.select(Flags, SelectedMultilibs)) {
+    // Ensure that -print-multi-directory only outputs one multilib directory.
+    Multilib LastSelected = SelectedMultilibs.back();
+    SelectedMultilibs = {LastSelected};
+
+    if (!SelectedMultilibs.back().isDefault())
       if (const auto &PathsCallback = Multilibs.filePathsCallback())
-        for (const auto &Path : PathsCallback(SelectedMultilib))
+        for (const auto &Path : PathsCallback(SelectedMultilibs.back()))
           // Prepend the multilib path to ensure it takes the precedence.
           getFilePaths().insert(getFilePaths().begin(), Path);
+  }
 }
 
 std::string Twizzler::ComputeEffectiveClangTriple(const ArgList &Args,

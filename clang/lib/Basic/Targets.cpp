@@ -636,14 +636,10 @@ std::unique_ptr<TargetInfo> AllocateTarget(const llvm::Triple &Triple,
       return std::make_unique<FreeBSDTargetInfo<X86_64TargetInfo>>(Triple,
                                                                    Opts);
     case llvm::Triple::Fuchsia:
-<<<<<<< HEAD
       return std::make_unique<FuchsiaTargetInfo<X86_64TargetInfo>>(Triple,
                                                                    Opts);
-=======
-      return new FuchsiaTargetInfo<X86_64TargetInfo>(Triple, Opts);
     case llvm::Triple::Twizzler:
-      return new TwizzlerTargetInfo<X86_64TargetInfo>(Triple, Opts);
->>>>>>> 9ce3760589df... Add basic Twizzler support to clang.
+      return std::make_unique<TwizzlerTargetInfo<X86_64TargetInfo>>(Triple, Opts);
     case llvm::Triple::KFreeBSD:
       return std::make_unique<KFreeBSDTargetInfo<X86_64TargetInfo>>(Triple,
                                                                     Opts);
