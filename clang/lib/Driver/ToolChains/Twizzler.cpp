@@ -267,19 +267,19 @@ Twizzler::Twizzler(const Driver &D, const llvm::Triple &Triple,
   Multilib::flags_list Flags;
   addMultilibFlag(
       Args.hasFlag(options::OPT_fexceptions, options::OPT_fno_exceptions, true),
-      "fexceptions", Flags);
-  addMultilibFlag(getSanitizerArgs(Args).needsAsanRt(), "fsanitize=address",
+      "-fexceptions", Flags);
+  addMultilibFlag(getSanitizerArgs(Args).needsAsanRt(), "-fsanitize=address",
                   Flags);
-  addMultilibFlag(getSanitizerArgs(Args).needsHwasanRt(), "fsanitize=hwaddress",
+  addMultilibFlag(getSanitizerArgs(Args).needsHwasanRt(), "-fsanitize=hwaddress",
                   Flags);
 
   addMultilibFlag(
       Args.hasFlag(options::OPT_fexperimental_relative_cxx_abi_vtables,
                    options::OPT_fno_experimental_relative_cxx_abi_vtables,
                    /*default=*/false),
-      "fexperimental-relative-c++-abi-vtables", Flags);
+      "-fexperimental-relative-c++-abi-vtables", Flags);
   addMultilibFlag(Args.getLastArgValue(options::OPT_fcxx_abi_EQ) == "itanium",
-                  "fc++-abi=itanium", Flags);
+                  "-fc++-abi=itanium", Flags);
 
   Multilibs.setFilePathsCallback(FilePaths);
 
