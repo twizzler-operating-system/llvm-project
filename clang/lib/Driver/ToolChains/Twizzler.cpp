@@ -209,55 +209,38 @@ Twizzler::Twizzler(const Driver &D, const llvm::Triple &Triple,
     return FP;
   };
 
+  
   Multilibs.push_back(Multilib());
   // Use the noexcept variant with -fno-exceptions to avoid the extra overhead.
   Multilibs.push_back(MultilibBuilder("noexcept", {}, {})
-                          .flag("-fexceptions")
-                          .flag("+fno-exceptions").makeMultilib());
+                          .flag("-fexceptions", /*Disallow=*/true)
+                          .flag("-fno-exceptions")
+                          .makeMultilib());
   // ASan has higher priority because we always want the instrumentated version.
   Multilibs.push_back(MultilibBuilder("asan", {}, {})
-                          .flag("+fsanitize=address").makeMultilib());
+                          .flag("-fsanitize=address")
+                          .makeMultilib());
   // Use the asan+noexcept variant with ASan and -fno-exceptions.
   Multilibs.push_back(MultilibBuilder("asan+noexcept", {}, {})
-                          .flag("+fsanitize=address")
-                          .flag("-fexceptions")
-                          .flag("+fno-exceptions").makeMultilib());
+                          .flag("-fsanitize=address")
+                          .flag("-fexceptions", /*Disallow=*/true)
+                          .flag("-fno-exceptions")
+                          .makeMultilib());
   // HWASan has higher priority because we always want the instrumentated
   // version.
-  Multilibs.push_back(
-      MultilibBuilder("hwasan", {}, {}).flag("+fsanitize=hwaddress").makeMultilib());
+  Multilibs.push_back(MultilibBuilder("hwasan", {}, {})
+                          .flag("-fsanitize=hwaddress")
+                          .makeMultilib());
   // Use the hwasan+noexcept variant with HWASan and -fno-exceptions.
   Multilibs.push_back(MultilibBuilder("hwasan+noexcept", {}, {})
-                          .flag("+fsanitize=hwaddress")
-                          .flag("-fexceptions")
-                          .flag("+fno-exceptions").makeMultilib());
-  // Use the relative vtables ABI.
-  // TODO: Remove these multilibs once relative vtables are enabled by default
-  // for Twizzler.
-  Multilibs.push_back(MultilibBuilder("relative-vtables", {}, {})
-                          .flag("+fexperimental-relative-c++-abi-vtables").makeMultilib());
-  Multilibs.push_back(MultilibBuilder("relative-vtables+noexcept", {}, {})
-                          .flag("+fexperimental-relative-c++-abi-vtables")
-                          .flag("-fexceptions")
-                          .flag("+fno-exceptions").makeMultilib());
-  Multilibs.push_back(MultilibBuilder("relative-vtables+asan", {}, {})
-                          .flag("+fexperimental-relative-c++-abi-vtables")
-                          .flag("+fsanitize=address").makeMultilib());
-  Multilibs.push_back(MultilibBuilder("relative-vtables+asan+noexcept", {}, {})
-                          .flag("+fexperimental-relative-c++-abi-vtables")
-                          .flag("+fsanitize=address")
-                          .flag("-fexceptions")
-                          .flag("+fno-exceptions").makeMultilib());
-  Multilibs.push_back(MultilibBuilder("relative-vtables+hwasan", {}, {})
-                          .flag("+fexperimental-relative-c++-abi-vtables")
-                          .flag("+fsanitize=hwaddress").makeMultilib());
-  Multilibs.push_back(MultilibBuilder("relative-vtables+hwasan+noexcept", {}, {})
-                          .flag("+fexperimental-relative-c++-abi-vtables")
-                          .flag("+fsanitize=hwaddress")
-                          .flag("-fexceptions")
-                          .flag("+fno-exceptions").makeMultilib());
+                          .flag("-fsanitize=hwaddress")
+                          .flag("-fexceptions", /*Disallow=*/true)
+                          .flag("-fno-exceptions")
+                          .makeMultilib());
   // Use Itanium C++ ABI for the compat multilib.
-  Multilibs.push_back(MultilibBuilder("compat", {}, {}).flag("+fc++-abi=itanium").makeMultilib());
+  Multilibs.push_back(MultilibBuilder("compat", {}, {})
+                          .flag("-fc++-abi=itanium")
+                          .makeMultilib());
 
   Multilibs.FilterOut([&](const Multilib &M) {
     std::vector<std::string> RD = FilePaths(M);
