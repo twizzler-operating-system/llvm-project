@@ -337,6 +337,7 @@ StringRef Triple::getOSTypeName(OSType Kind) {
   case Solaris: return "solaris";
   case Serenity: return "serenity";
   case TvOS: return "tvos";
+  case Twizzler: return "twizzler";
   case UEFI: return "uefi";
   case WASI: return "wasi";
   case WatchOS: return "watchos";

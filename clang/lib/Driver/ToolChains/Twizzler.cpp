@@ -121,11 +121,13 @@ void twizzler::Linker::ConstructJob(Compilation &C, const JobAction &JA,
   CmdArgs.push_back("-o");
   CmdArgs.push_back(Output.getFilename());
 
-  if (!Args.hasArg(options::OPT_nostdlib, options::OPT_nostartfiles,
+  if (!Args.hasArg(options::OPT_nostdlib, options::OPT_nodefaultlibs,
                    options::OPT_r)) {
-    if (!Args.hasArg(options::OPT_shared)) {
-      CmdArgs.push_back(Args.MakeArgString(ToolChain.GetFilePath("Scrt1.o")));
-    }
+    CmdArgs.push_back("crti.o");
+    if (Args.hasArg(options::OPT_static))
+      CmdArgs.push_back("crtbegin.o");
+    else
+      CmdArgs.push_back("crtbeginS.o");
   }
 
   Args.AddAllArgs(CmdArgs, options::OPT_L);
@@ -178,8 +180,15 @@ void twizzler::Linker::ConstructJob(Compilation &C, const JobAction &JA,
     if (Args.hasArg(options::OPT_fsplit_stack))
       CmdArgs.push_back("--wrap=pthread_create");
 
-    if (!Args.hasArg(options::OPT_nolibc))
+    if (!Args.hasArg(options::OPT_nolibc)) {
       CmdArgs.push_back("-lc");
+    }
+
+    if (Args.hasArg(options::OPT_static))
+      CmdArgs.push_back("crtend.o");
+    else
+      CmdArgs.push_back("crtendS.o");
+    CmdArgs.push_back("crtn.o");
   }
 
   C.addCommand(std::make_unique<Command>(JA, *this, ResponseFileSupport::None(),
@@ -209,7 +218,7 @@ Twizzler::Twizzler(const Driver &D, const llvm::Triple &Triple,
     return FP;
   };
 
-  
+
   Multilibs.push_back(Multilib());
   // Use the noexcept variant with -fno-exceptions to avoid the extra overhead.
   Multilibs.push_back(MultilibBuilder("noexcept", {}, {})
@@ -266,7 +275,7 @@ Twizzler::Twizzler(const Driver &D, const llvm::Triple &Triple,
 
   Multilibs.setFilePathsCallback(FilePaths);
 
-  if (Multilibs.select(Flags, SelectedMultilibs)) {
+  if (Multilibs.select(D, Flags, SelectedMultilibs)) {
     // Ensure that -print-multi-directory only outputs one multilib directory.
     Multilib LastSelected = SelectedMultilibs.back();
     SelectedMultilibs = {LastSelected};
