@@ -21,6 +21,8 @@
 #include "llvm/Support/Path.h"
 #include "llvm/Support/VirtualFileSystem.h"
 
+#include<iostream>
+
 using namespace clang::driver;
 using namespace clang::driver::toolchains;
 using namespace clang::driver::tools;
@@ -123,11 +125,11 @@ void twizzler::Linker::ConstructJob(Compilation &C, const JobAction &JA,
 
   if (!Args.hasArg(options::OPT_nostdlib, options::OPT_nodefaultlibs,
                    options::OPT_r)) {
-    CmdArgs.push_back("crti.o");
+    CmdArgs.push_back(Args.MakeArgString(ToolChain.GetFilePath("crti.o")));
     if (Args.hasArg(options::OPT_static))
-      CmdArgs.push_back("crtbegin.o");
+      CmdArgs.push_back(Args.MakeArgString(ToolChain.GetFilePath("crtbegin.o")));
     else
-      CmdArgs.push_back("crtbeginS.o");
+      CmdArgs.push_back(Args.MakeArgString(ToolChain.GetFilePath("crtbeginS.o")));
   }
 
   Args.AddAllArgs(CmdArgs, options::OPT_L);
@@ -184,11 +186,12 @@ void twizzler::Linker::ConstructJob(Compilation &C, const JobAction &JA,
       CmdArgs.push_back("-lc");
     }
 
-    if (Args.hasArg(options::OPT_static))
-      CmdArgs.push_back("crtend.o");
-    else
-      CmdArgs.push_back("crtendS.o");
-    CmdArgs.push_back("crtn.o");
+    if (Args.hasArg(options::OPT_static)) {
+      std::cout << Args.MakeArgString(ToolChain.GetFilePath("crtend.o")) << "\n";
+      CmdArgs.push_back(Args.MakeArgString(ToolChain.GetFilePath("crtend.o")));
+    }else
+      CmdArgs.push_back(Args.MakeArgString(ToolChain.GetFilePath("crtendS.o")));
+    CmdArgs.push_back(Args.MakeArgString(ToolChain.GetFilePath("crtn.o")));
   }
 
   C.addCommand(std::make_unique<Command>(JA, *this, ResponseFileSupport::None(),
