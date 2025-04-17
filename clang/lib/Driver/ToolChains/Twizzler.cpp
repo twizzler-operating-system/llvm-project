@@ -21,8 +21,6 @@
 #include "llvm/Support/Path.h"
 #include "llvm/Support/VirtualFileSystem.h"
 
-#include<iostream>
-
 using namespace clang::driver;
 using namespace clang::driver::toolchains;
 using namespace clang::driver::tools;
@@ -70,8 +68,9 @@ void twizzler::Linker::ConstructJob(Compilation &C, const JobAction &JA,
     CmdArgs.push_back("--pack-dyn-relocs=relr");
   }
 
-  if (!D.SysRoot.empty())
+  if (!D.SysRoot.empty()) {
     CmdArgs.push_back(Args.MakeArgString("--sysroot=" + D.SysRoot));
+  }
 
   if (!Args.hasArg(options::OPT_shared) && !Args.hasArg(options::OPT_r))
     CmdArgs.push_back("-pie");
@@ -187,7 +186,6 @@ void twizzler::Linker::ConstructJob(Compilation &C, const JobAction &JA,
     }
 
     if (Args.hasArg(options::OPT_static)) {
-      std::cout << Args.MakeArgString(ToolChain.GetFilePath("crtend.o")) << "\n";
       CmdArgs.push_back(Args.MakeArgString(ToolChain.GetFilePath("crtend.o")));
     }else
       CmdArgs.push_back(Args.MakeArgString(ToolChain.GetFilePath("crtendS.o")));
