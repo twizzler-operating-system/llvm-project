@@ -304,6 +304,28 @@ long double    truncl(long double x);
 #      include_next <math.h>
 #    endif
 
+#define HUGE_VAL (__builtin_huge_val())
+#define HUGE_VALF (__builtin_huge_valf())
+#define HUGE_VALL (__builtin_huge_vall())
+#define INFINITY (__builtin_inff())
+#define NAN (__builtin_nanf(""))
+
+/* [C11/7.12.1 Treatment of error conditions] */
+
+#define MATH_ERRNO 1
+#define MATH_ERREXCEPT 2
+#define math_errhandling 3
+
+/* [C11/7.12.3 Classification macros] */
+
+/* NOTE: fpclassify always returns exactly one of those constants */
+/* However making them bitwise disjoint simplifies isfinite() etc. */
+#define FP_INFINITE 1
+#define FP_NAN 2
+#define FP_NORMAL 4
+#define FP_SUBNORMAL 8
+#define FP_ZERO 16
+
 #    ifdef __cplusplus
 
 // We support including .h headers inside 'extern "C"' contexts, so switch

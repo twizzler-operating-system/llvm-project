@@ -34,7 +34,17 @@ Macros:
 #  if __has_include_next(<errno.h>)
 #    include_next <errno.h>
 #  endif
+#include<stddef.h>
+extern "C"  {
 
+/* Some programs define their own errno as an "extern int" if it is not a macro. */
+#define errno __mlibc_errno
+extern __thread int __mlibc_errno;
+
+int *__errno_location(void);
+char *strerror_r(int __errnum, char *__buffer, size_t __size) __asm__("__gnu_strerror_r");
+
+}
 #  ifdef __cplusplus
 
 #    if !defined(EOWNERDEAD) || !defined(ENOTRECOVERABLE)

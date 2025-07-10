@@ -20,6 +20,7 @@ set(CMAKE_FOLDER "libc++")
 set(LIBCXX_SOURCE_DIR  ${CMAKE_CURRENT_SOURCE_DIR})
 set(LIBCXX_BINARY_DIR  ${CMAKE_CURRENT_BINARY_DIR})
 
+find_package (Python3 COMPONENTS Interpreter)
 include(GNUInstallDirs)
 include(WarningFlags)
 
