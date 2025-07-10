@@ -117,7 +117,7 @@
 #    include <__locale_dir/support/freebsd.h>
 #  elif defined(_LIBCPP_MSVCRT_LIKE)
 #    include <__locale_dir/support/windows.h>
-#  elif defined(__Fuchsia__)
+#  elif defined(__Fuchsia__) || defined(__Twizzler__)
 #    include <__locale_dir/support/fuchsia.h>
 #  elif defined(__linux__)
 #    include <__locale_dir/support/linux.h>

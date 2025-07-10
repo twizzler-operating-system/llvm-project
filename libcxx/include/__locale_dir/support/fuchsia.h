@@ -14,7 +14,9 @@
 #include <clocale> // uselocale & friends
 #include <cstdio>
 #include <cstdlib>
+#  if _LIBCPP_HAS_WIDE_CHARACTERS
 #include <cwchar>
+#  endif
 
 #if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #  pragma GCC system_header

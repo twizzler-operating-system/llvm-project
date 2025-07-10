@@ -118,7 +118,7 @@ elseif ("${LIBCXX_CXX_ABI}" STREQUAL "libsupc++")
 # Link against the in-tree libc++abi
 elseif ("${LIBCXX_CXX_ABI}" STREQUAL "libcxxabi")
   add_library(libcxx-abi-headers INTERFACE)
-  target_link_libraries(libcxx-abi-headers INTERFACE cxxabi-headers)
+  target_link_libraries(libcxx-abi-headers INTERFACE )
   target_compile_definitions(libcxx-abi-headers INTERFACE "-DLIBCXX_BUILDING_LIBCXXABI")
 
   if (TARGET cxxabi_shared)

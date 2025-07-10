@@ -64,6 +64,49 @@ size_t strlen(const char* s);
 #    include_next <string.h>
 #  endif
 
+
+#include<stddef.h>
+extern "C" {
+/* [7.24.2] Copying functions */
+
+void *memcpy(void *__restrict __dest, const void *__restrict __src, size_t __size);
+void *memmove(void *__dest, const void *__src, size_t __size);
+char *strcpy(char *__restrict __dest, const char *src);
+char *strncpy(char *__restrict __dest, const char *__src, size_t __max_size);
+
+/* [7.24.3] Concatenation functions */
+
+char *strcat(char *__restrict __dest, const char *__restrict __src);
+char *strncat(char *__restrict __dest, const char *__restrict __src, size_t __max_size);
+
+/* [7.24.4] Comparison functions */
+
+int memcmp(const void *__a, const void *__b, size_t __size);
+int strcmp(const char *__a, const char *__b);
+int strcoll(const char *__a, const char *__b);
+int strncmp(const char *__a, const char *__b, size_t __max_size);
+size_t strxfrm(char *__restrict __dest, const char *__restrict __src, size_t __max_size);
+
+/* [7.24.5] Search functions */
+
+void *memchr(const void *__s, int __c, size_t __size);
+char *strchr(const char *__s, int __c);
+size_t strcspn(const char *__s, const char *__chrs);
+char *strpbrk(const char *__s, const char *__chrs);
+char *strrchr(const char *__s, int __c);
+size_t strspn(const char *__s, const char *__chrs);
+char *strstr(const char *__pattern, const char *__s);
+char *strtok(char *__restrict __s, const char *__restrict __delimiter);
+
+/* This is a GNU extension. */
+char *strchrnul(const char * __s, int __c);
+
+/* [7.24.6] Miscellaneous functions */
+
+void *memset(void *__dest, int __c, size_t __size);
+char *strerror(int __errnum);
+size_t strlen(const char *__s);
+}
 // MSVCRT, GNU libc and its derivates may already have the correct prototype in
 // <string.h>. This macro can be defined by users if their C library provides
 // the right signature.
