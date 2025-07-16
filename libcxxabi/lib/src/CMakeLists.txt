@@ -36,7 +36,7 @@ else()
   )
 endif()
 
-if (LIBCXXABI_ENABLE_THREADS AND (UNIX OR FUCHSIA OR TWIZZLER) AND NOT (APPLE OR CYGWIN)
+if (LIBCXXABI_ENABLE_THREADS AND (UNIX OR FUCHSIA) AND NOT (APPLE OR CYGWIN)
     AND NOT (${CMAKE_SYSTEM_NAME} MATCHES "AIX"))
   list(APPEND LIBCXXABI_SOURCES
     cxa_thread_atexit.cpp
@@ -172,12 +172,11 @@ if (LIBCXXABI_USE_LLVM_UNWINDER)
     target_link_libraries(cxxabi_shared_objects PUBLIC unwind_shared)
   endif()
 endif()
-target_link_libraries(cxxabi_shared_objects
-  PUBLIC cxxabi-headers
-  PRIVATE cxx-headers runtimes-libc-headers ${LIBCXXABI_LIBRARIES})
+target_link_libraries(cxxabi_shared_objects PRIVATE ${LIBCXXABI_LIBRARIES})
 if (NOT CXX_SUPPORTS_NOSTDLIBXX_FLAG)
   target_link_libraries(cxxabi_shared_objects PRIVATE ${LIBCXXABI_BUILTINS_LIBRARY})
 endif()
+target_link_libraries(cxxabi_shared_objects PUBLIC cxxabi-headers)
 set_target_properties(cxxabi_shared_objects
   PROPERTIES
     CXX_EXTENSIONS OFF
@@ -216,7 +215,7 @@ if (ZOS)
 endif ()
 
 target_link_libraries(cxxabi_shared
-  PUBLIC cxxabi_shared_objects runtimes-libc-shared
+  PUBLIC cxxabi_shared_objects
   PRIVATE ${LIBCXXABI_LIBRARIES})
 
 if (LIBCXXABI_ENABLE_SHARED)
@@ -275,9 +274,8 @@ if (LIBCXXABI_USE_LLVM_UNWINDER AND LIBCXXABI_STATICALLY_LINK_UNWINDER_IN_STATIC
   target_link_libraries(cxxabi_static_objects PUBLIC unwind_static_objects) # propagate usage requirements
   target_sources(cxxabi_static_objects PUBLIC $<TARGET_OBJECTS:unwind_static_objects>)
 endif()
-target_link_libraries(cxxabi_static_objects
-  PUBLIC cxxabi-headers
-  PRIVATE cxx-headers runtimes-libc-headers ${LIBCXXABI_STATIC_LIBRARIES} ${LIBCXXABI_LIBRARIES})
+target_link_libraries(cxxabi_static_objects PRIVATE cxx-headers ${LIBCXXABI_STATIC_LIBRARIES} ${LIBCXXABI_LIBRARIES})
+target_link_libraries(cxxabi_static_objects PUBLIC cxxabi-headers)
 set_target_properties(cxxabi_static_objects
   PROPERTIES
     CXX_EXTENSIONS OFF
@@ -313,7 +311,7 @@ endif()
 
 add_library(cxxabi_static STATIC)
 if (LIBCXXABI_USE_LLVM_UNWINDER AND NOT LIBCXXABI_STATICALLY_LINK_UNWINDER_IN_STATIC_LIBRARY)
-  target_link_libraries(cxxabi_static PUBLIC unwind_static runtimes-libc-static)
+  target_link_libraries(cxxabi_static PUBLIC unwind_static)
 endif()
 set_target_properties(cxxabi_static
   PROPERTIES

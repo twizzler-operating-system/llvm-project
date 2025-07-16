@@ -15,10 +15,6 @@
 #endif
 #endif
 
-#if defined(__Twizzler__)
-#undef HAVE___CXA_THREAD_ATEXIT_IMPL
-#endif
-
 #include <stdlib.h>
 
 namespace __cxxabiv1 {
