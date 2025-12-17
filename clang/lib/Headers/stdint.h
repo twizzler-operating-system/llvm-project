@@ -819,11 +819,7 @@ typedef __UINTMAX_TYPE__ uintmax_t;
 # define WCHAR_MAX __WCHAR_MAX__
 #endif
 #ifndef WCHAR_MIN
-# if __WCHAR_MAX__ == __INTN_MAX(__WCHAR_WIDTH__)
-#  define WCHAR_MIN __INTN_MIN(__WCHAR_WIDTH__)
-# else
 #  define WCHAR_MIN __UINTN_C(__WCHAR_WIDTH__, 0)
-# endif
 #endif
 
 /* 7.18.4.2 Macros for greatest-width integer constants. */

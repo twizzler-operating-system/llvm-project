@@ -174,7 +174,7 @@ if (LIBCXXABI_USE_LLVM_UNWINDER)
 endif()
 target_link_libraries(cxxabi_shared_objects
   PUBLIC cxxabi-headers
-  PRIVATE cxx-headers runtimes-libc-headers ${LIBCXXABI_LIBRARIES})
+  PRIVATE runtimes-libc-headers ${LIBCXXABI_LIBRARIES})
 if (NOT CXX_SUPPORTS_NOSTDLIBXX_FLAG)
   target_link_libraries(cxxabi_shared_objects PRIVATE ${LIBCXXABI_BUILTINS_LIBRARY})
 endif()
@@ -277,7 +277,7 @@ if (LIBCXXABI_USE_LLVM_UNWINDER AND LIBCXXABI_STATICALLY_LINK_UNWINDER_IN_STATIC
 endif()
 target_link_libraries(cxxabi_static_objects
   PUBLIC cxxabi-headers
-  PRIVATE cxx-headers runtimes-libc-headers ${LIBCXXABI_STATIC_LIBRARIES} ${LIBCXXABI_LIBRARIES})
+  PRIVATE runtimes-libc-headers ${LIBCXXABI_STATIC_LIBRARIES} ${LIBCXXABI_LIBRARIES})
 set_target_properties(cxxabi_static_objects
   PROPERTIES
     CXX_EXTENSIONS OFF
