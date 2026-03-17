@@ -88,6 +88,49 @@ wctrans_t wctrans(const char* property);
 #    undef towctrans
 #    undef wctrans
 
+#ifndef __MLIBC_ABI_ONLY
+
+extern "C" {
+
+/* [C11/7.30.2.2] Extensible wide character classification functions. */
+#ifndef wint_t
+#ifndef __WINT_TYPE
+#define __WINT_TYPE unsigned int;
+#endif
+
+typedef __WINT_TYPE__ wint_t;
+#endif
+
+typedef unsigned long wctrans_t;
+typedef unsigned long wctype_t;
+
+int iswalnum(wint_t __wc);
+int iswalpha(wint_t __wc);
+int iswblank(wint_t __wc);
+int iswcntrl(wint_t __wc);
+int iswdigit(wint_t __wc);
+int iswgraph(wint_t __wc);
+int iswlower(wint_t __wc);
+int iswprint(wint_t __wc);
+int iswpunct(wint_t __wc);
+int iswspace(wint_t __wc);
+int iswupper(wint_t __wc);
+int iswxdigit(wint_t __wc);
+
+wctype_t wctype(const char *__string);
+int iswctype(wint_t __wc, wctype_t __type);
+
+/* [C11/7.30.3] Wide character case mapping utilities. */
+
+wint_t towlower(wint_t __wc);
+wint_t towupper(wint_t __wc);
+
+wctrans_t wctrans(const char *__string);
+wint_t towctrans(wint_t __wc, wctrans_t __trans);
+
+#endif /* !__MLIBC_ABI_ONLY */
+
+}
 #  endif // __cplusplus
 #endif   // defined(__cplusplus) && __cplusplus < 201103L && defined(_LIBCPP_USE_FROZEN_CXX03_HEADERS)
 

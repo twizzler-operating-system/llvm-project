@@ -904,7 +904,7 @@ typedef __char32_t char32_t;
 // clang-format off
 #  if (_LIBCPP_HAS_THREAD_API_PTHREAD && defined(__GLIBC__)) ||                                                        \
       (_LIBCPP_HAS_THREAD_API_C11 && defined(__Fuchsia__)) ||                                                          \
-       _LIBCPP_HAS_THREAD_API_WIN32
+       _LIBCPP_HAS_THREAD_API_WIN32 || defined(__Twizzler__)
 // clang-format on
 #    define _LIBCPP_HAS_TRIVIAL_MUTEX_DESTRUCTION 1
 #  else

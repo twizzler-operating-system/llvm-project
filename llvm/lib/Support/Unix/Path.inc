@@ -321,7 +321,7 @@ std::string getMainExecutable(const char *argv0, void *MainAddr) {
       return std::string(real_path);
     break; // Found entry, but realpath failed.
   }
-#elif defined(HAVE_DLOPEN)
+#elif defined(HAVE_DLOPEN) || defined(__Twizzler__)
   // Use dladdr to get executable path if available.
   Dl_info DLInfo;
   int err = dladdr(MainAddr, &DLInfo);
@@ -510,6 +510,9 @@ static bool is_local_impl(struct STATVFS &Vfs) {
   return true;
 #elif defined(__HAIKU__)
   // Haiku doesn't expose this information.
+  return false;
+#elif defined(__Twizzler__)
+  // Twizzler doesn't expose this information.
   return false;
 #elif defined(__sun)
   // statvfs::f_basetype contains a null-terminated FSType name of the mounted

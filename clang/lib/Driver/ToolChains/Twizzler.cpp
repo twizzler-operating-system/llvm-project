@@ -182,6 +182,9 @@ void twizzler::Linker::ConstructJob(Compilation &C, const JobAction &JA,
     if (!Args.hasArg(options::OPT_nolibc)) {
       CmdArgs.push_back("-lc");
     }
+    if (!Args.hasArg(options::OPT_nostdlib)) {
+      CmdArgs.push_back("-ltwz_rt");
+    }
 
     if (Args.hasArg(options::OPT_static)) {
       CmdArgs.push_back(Args.MakeArgString(ToolChain.GetFilePath("crtend.o")));
@@ -363,6 +366,7 @@ void Twizzler::AddClangSystemIncludeArgs(const ArgList &DriverArgs,
     llvm::sys::path::append(P, "include");
     addExternCSystemInclude(DriverArgs, CC1Args, P.str());
   }
+
 }
 
 void Twizzler::AddClangCXXStdlibIncludeArgs(const ArgList &DriverArgs,
@@ -389,6 +393,7 @@ void Twizzler::AddClangCXXStdlibIncludeArgs(const ArgList &DriverArgs,
     SmallString<128> Dir(Path);
     llvm::sys::path::append(Dir, "c++", Version);
     addSystemInclude(DriverArgs, CC1Args, Dir);
+
   };
 
   switch (GetCXXStdlibType(DriverArgs)) {
@@ -396,6 +401,11 @@ void Twizzler::AddClangCXXStdlibIncludeArgs(const ArgList &DriverArgs,
     SmallString<128> P(D.Dir);
     llvm::sys::path::append(P, "..", "include");
     AddCXXIncludePath(P);
+    if (!D.SysRoot.empty()) {
+      SmallString<128> P(D.SysRoot);
+      llvm::sys::path::append(P, "include");
+      AddCXXIncludePath(P);
+    }
     break;
   }
 
@@ -411,6 +421,8 @@ void Twizzler::AddCXXStdlibLibArgs(const ArgList &Args,
     CmdArgs.push_back("-lc++");
     if (Args.hasArg(options::OPT_fexperimental_library))
       CmdArgs.push_back("-lc++experimental");
+    CmdArgs.push_back("-lc++abi");
+    CmdArgs.push_back("-lunwind");
     break;
 
   case ToolChain::CST_Libstdcxx:

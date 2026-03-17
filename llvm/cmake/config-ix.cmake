@@ -12,7 +12,7 @@ include(CheckCompilerVersion)
 include(CheckProblematicConfigurations)
 include(HandleLLVMStdlib)
 
-if (ANDROID OR CYGWIN OR CMAKE_SYSTEM_NAME MATCHES "AIX|DragonFly|FreeBSD|Haiku|Linux|NetBSD|OpenBSD|SunOS")
+if (ANDROID OR CYGWIN OR CMAKE_SYSTEM_NAME MATCHES "AIX|DragonFly|FreeBSD|Haiku|Linux|NetBSD|OpenBSD|SunOS|Twizzler")
   set(HAVE_MACH_MACH_H 0)
   set(HAVE_MALLOC_MALLOC_H 0)
   set(HAVE_PTHREAD_H 1)
