@@ -29,7 +29,7 @@ raw_ostream &BranchProbability::print(raw_ostream &OS) const {
   // Get a percentage rounded to two decimal digits. This avoids
   // implementation-defined rounding inside printf.
   double Percent = rint(((double)N / D) * 100.0 * 100.0) / 100.0;
-  return OS << format("0x%08" PRIx32 " / 0x%08" PRIx32 " = %.2f%%", N, D,
+  return OS << format("0x%08u" " / 0x%08u" " = %.2f%%", N, D,
                       Percent);
 }
 

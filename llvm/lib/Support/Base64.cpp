@@ -71,7 +71,7 @@ llvm::Error llvm::decodeBase64(llvm::StringRef Input,
       if (Illegal)
         return createStringError(
             std::errc::illegal_byte_sequence,
-            "Invalid Base64 character %#2.2x at index %" PRIu64, Byte, ByteIdx);
+            "Invalid Base64 character %#2.2x at index %u" , Byte, ByteIdx);
       Hex64Bytes[ByteOffset] = DecodedByte;
     }
     // Now we have 6 bits of 3 bytes in value in each of the Hex64Bytes bytes.

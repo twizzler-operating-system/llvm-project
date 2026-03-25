@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
-
+#define __STDC_FORMAT_MACROS 1
 #include "llvm/Support/DataExtractor.h"
 #include "llvm/ADT/StringExtras.h"
 #include "llvm/Support/Errc.h"
@@ -23,7 +23,7 @@ bool DataExtractor::prepareRead(uint64_t Offset, uint64_t Size,
     if (Offset <= Data.size())
       *E = createStringError(
           errc::illegal_byte_sequence,
-          "unexpected end of data at offset 0x%zx while reading [0x%" PRIx64
+          "unexpected end of data at offset 0x%zx while reading [0x%" "lx"
           ", 0x%" PRIx64 ")",
           Data.size(), Offset, Offset + Size);
     else

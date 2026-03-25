@@ -56,6 +56,9 @@ void twizzler::Linker::ConstructJob(Compilation &C, const JobAction &JA,
   CmdArgs.push_back("-z");
   CmdArgs.push_back("now");
 
+  CmdArgs.push_back("-z");
+  CmdArgs.push_back("norelro");
+
   const char *Exec = Args.MakeArgString(ToolChain.GetLinkerPath());
   if (llvm::sys::path::filename(Exec).equals_insensitive("ld.lld") ||
       llvm::sys::path::stem(Exec).equals_insensitive("ld.lld")) {
