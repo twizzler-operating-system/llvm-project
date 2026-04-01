@@ -132,6 +132,12 @@ void twizzler::Linker::ConstructJob(Compilation &C, const JobAction &JA,
       CmdArgs.push_back(Args.MakeArgString(ToolChain.GetFilePath("crtbegin.o")));
     else
       CmdArgs.push_back(Args.MakeArgString(ToolChain.GetFilePath("crtbeginS.o")));
+    if (!Args.hasArg(options::OPT_shared)) {
+        //if (Args.hasArg(options::OPT_static))
+            CmdArgs.push_back(Args.MakeArgString(ToolChain.GetFilePath("Scrt1.o")));
+        //else
+        //    CmdArgs.push_back(Args.MakeArgString(ToolChain.GetFilePath("crt1.o")));
+    }
   }
 
   Args.AddAllArgs(CmdArgs, options::OPT_L);
