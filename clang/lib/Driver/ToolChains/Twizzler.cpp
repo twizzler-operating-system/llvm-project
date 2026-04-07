@@ -21,6 +21,8 @@
 #include "llvm/Support/Path.h"
 #include "llvm/Support/VirtualFileSystem.h"
 
+#include<iostream>
+
 using namespace clang::driver;
 using namespace clang::driver::toolchains;
 using namespace clang::driver::tools;
@@ -200,6 +202,18 @@ void twizzler::Linker::ConstructJob(Compilation &C, const JobAction &JA,
     }else
       CmdArgs.push_back(Args.MakeArgString(ToolChain.GetFilePath("crtendS.o")));
     CmdArgs.push_back(Args.MakeArgString(ToolChain.GetFilePath("crtn.o")));
+  }
+  CmdArgs.push_back("-T");
+  if (!D.SysRoot.empty()) {
+    SmallString<128> P(D.SysRoot);
+    llvm::sys::path::append(P, "lib");
+    llvm::sys::path::append(P, "twizzler.ld");
+    CmdArgs.push_back(Args.MakeArgString(P));
+  } else {
+    SmallString<128> P(D.Dir);
+    llvm::sys::path::append(P, "lib");
+    llvm::sys::path::append(P, "twizzler.ld");
+    CmdArgs.push_back(Args.MakeArgString(P));
   }
 
   C.addCommand(std::make_unique<Command>(JA, *this, ResponseFileSupport::None(),
