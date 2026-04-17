@@ -101,6 +101,37 @@ void twizzler::Linker::ConstructJob(Compilation &C, const JobAction &JA,
 
   CmdArgs.push_back("--eh-frame-hdr");
 
+  // Add library paths from <sysroot>/pkg/*/lib
+  if (!D.SysRoot.empty()) {
+    SmallString<128> PkgDir(D.SysRoot);
+    llvm::sys::path::append(PkgDir, "pkg");
+    std::error_code EC;
+    for (llvm::sys::fs::directory_iterator DirIt(PkgDir, EC), DirEnd; DirIt != DirEnd && !EC; DirIt.increment(EC)) {
+      if (llvm::sys::fs::is_directory(DirIt->path())) {
+        SmallString<128> LibDir(DirIt->path());
+        llvm::sys::path::append(LibDir, "lib");
+        if (llvm::sys::fs::exists(LibDir)) {
+          CmdArgs.push_back("-L");
+          CmdArgs.push_back(Args.MakeArgString(LibDir));
+        }
+      }
+    }
+  } else {
+    SmallString<128> PkgDir("/");
+    llvm::sys::path::append(PkgDir, "pkg");
+    std::error_code EC;
+    for (llvm::sys::fs::directory_iterator DirIt(PkgDir, EC), DirEnd; DirIt != DirEnd && !EC; DirIt.increment(EC)) {
+      if (llvm::sys::fs::is_directory(DirIt->path())) {
+        SmallString<128> LibDir(DirIt->path());
+        llvm::sys::path::append(LibDir, "lib");
+        if (llvm::sys::fs::exists(LibDir)) {
+          CmdArgs.push_back("-L");
+          CmdArgs.push_back(Args.MakeArgString(LibDir));
+        }
+      }
+    }
+  }
+
   if (Args.hasArg(options::OPT_static))
     CmdArgs.push_back("-Bstatic");
   else if (Args.hasArg(options::OPT_shared))
@@ -388,6 +419,38 @@ void Twizzler::AddClangSystemIncludeArgs(const ArgList &DriverArgs,
     SmallString<128> P(D.SysRoot);
     llvm::sys::path::append(P, "include");
     addExternCSystemInclude(DriverArgs, CC1Args, P.str());
+  }
+
+
+  // Add include paths from <sysroot>/pkg/*/include
+  if (!D.SysRoot.empty()) {
+    SmallString<PATH_MAX> PkgDir(D.SysRoot);
+    llvm::sys::path::append(PkgDir, "pkg");
+    std::error_code EC;
+    for (llvm::sys::fs::directory_iterator DirIt(PkgDir, EC), DirEnd; DirIt != DirEnd && !EC; DirIt.increment(EC)) {
+      if (llvm::sys::fs::is_directory(DirIt->path())) {
+        SmallString<PATH_MAX> IncDir(DirIt->path());
+        llvm::sys::path::append(IncDir, "include");
+        if (getVFS().exists(IncDir)) {
+          addExternCSystemInclude(DriverArgs, CC1Args, IncDir);
+        }
+      }
+    }
+  } else {
+    SmallString<PATH_MAX> PkgDir("/");
+    llvm::sys::path::append(PkgDir, "pkg");
+      fprintf(stderr, "D: %s\n", PkgDir.c_str());
+    std::error_code EC;
+    for (llvm::sys::fs::directory_iterator DirIt(PkgDir, EC), DirEnd; DirIt != DirEnd && !EC; DirIt.increment(EC)) {
+      fprintf(stderr, "D: %s\n", DirIt->path().c_str());
+      if (llvm::sys::fs::is_directory(DirIt->path())) {
+        SmallString<128> IncDir(DirIt->path());
+        llvm::sys::path::append(IncDir, "include");
+        if (getVFS().exists(IncDir)) {
+          addExternCSystemInclude(DriverArgs, CC1Args, IncDir);
+        }
+      }
+    }
   }
 
 }
