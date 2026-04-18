@@ -439,10 +439,8 @@ void Twizzler::AddClangSystemIncludeArgs(const ArgList &DriverArgs,
   } else {
     SmallString<PATH_MAX> PkgDir("/");
     llvm::sys::path::append(PkgDir, "pkg");
-      fprintf(stderr, "D: %s\n", PkgDir.c_str());
     std::error_code EC;
     for (llvm::sys::fs::directory_iterator DirIt(PkgDir, EC), DirEnd; DirIt != DirEnd && !EC; DirIt.increment(EC)) {
-      fprintf(stderr, "D: %s\n", DirIt->path().c_str());
       if (llvm::sys::fs::is_directory(DirIt->path())) {
         SmallString<128> IncDir(DirIt->path());
         llvm::sys::path::append(IncDir, "include");
