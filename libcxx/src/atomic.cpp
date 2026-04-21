@@ -41,6 +41,8 @@
 // OpenBSD has no indirect syscalls
 #  define _LIBCPP_FUTEX(...) futex(__VA_ARGS__)
 
+#elif defined(__Twizzler__)
+
 #else // <- Add other operating systems here
 
 // Baseline needs no new headers
@@ -99,6 +101,39 @@ __libcpp_platform_wait_on_address(__cxx_atomic_contention_t const volatile* __pt
 
 static void __libcpp_platform_wake_by_address(__cxx_atomic_contention_t const volatile* __ptr, bool __notify_one) {
   _umtx_op(const_cast<__cxx_atomic_contention_t*>(__ptr), UMTX_OP_WAKE, __notify_one ? 1 : INT_MAX, nullptr, nullptr);
+}
+
+#elif defined(__Twizzler__)
+
+#  include <twizzler/rt/thread.h>
+#  include <stdint.h>
+#  include <limits.h>
+
+// Twizzler's futex is 32-bit, but __cxx_contention_t is 64-bit on this platform.
+// We cast to the lower 32 bits for the actual futex operation.
+
+static void
+__libcpp_platform_wait_on_address(__cxx_atomic_contention_t const volatile* __ptr, __cxx_contention_t __val) {
+  // Cast the 64-bit contention value to 32-bit futex word for Twizzler's futex
+  futex_word* __futex_ptr = reinterpret_cast<futex_word*>(const_cast<__cxx_atomic_contention_t*>(__ptr));
+  futex_word __futex_val = static_cast<futex_word>(__val & 0xFFFFFFFFU);
+
+  // Use a 2-second timeout, similar to Linux implementation
+  struct option_duration __timeout = {
+    .dur = {.seconds = 2, .nanos = 0},
+    .is_some = 1
+  };
+
+  twz_rt_futex_wait((_Atomic futex_word*)__futex_ptr, __futex_val, __timeout);
+}
+
+static void __libcpp_platform_wake_by_address(__cxx_atomic_contention_t const volatile* __ptr, bool __notify_one) {
+  // Cast the contention pointer to futex_word pointer
+  futex_word* __futex_ptr = reinterpret_cast<futex_word*>(const_cast<__cxx_atomic_contention_t*>(__ptr));
+
+  // Wake the appropriate number of threads
+  int64_t __max = __notify_one ? 1 : FUTEX_WAKE_ALL;
+  twz_rt_futex_wake((_Atomic futex_word*)__futex_ptr, __max);
 }
 
 #else // <- Add other operating systems here
