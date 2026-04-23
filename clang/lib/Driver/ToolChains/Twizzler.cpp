@@ -62,6 +62,7 @@ void twizzler::Linker::ConstructJob(Compilation &C, const JobAction &JA,
   CmdArgs.push_back("norelro");
 
   const char *Exec = Args.MakeArgString(ToolChain.GetLinkerPath());
+  fprintf(stderr, "found linker at %s\n", Exec);
   if (llvm::sys::path::filename(Exec).equals_insensitive("ld.lld") ||
       llvm::sys::path::stem(Exec).equals_insensitive("ld.lld")) {
     CmdArgs.push_back("-z");
@@ -129,6 +130,42 @@ void twizzler::Linker::ConstructJob(Compilation &C, const JobAction &JA,
           CmdArgs.push_back(Args.MakeArgString(LibDir));
         }
       }
+    }
+  }
+
+  if (!D.SysRoot.empty()) {
+    SmallString<PATH_MAX> P(D.SysRoot);
+    llvm::sys::path::append(P, "pkg/llvm");
+    llvm::sys::path::append(P, D.ResourceDir);
+    llvm::sys::path::append(P, "lib");
+    if (llvm::sys::fs::exists(P)) {
+      CmdArgs.push_back("-L");
+      CmdArgs.push_back(Args.MakeArgString(P));
+    }
+  } else {
+    SmallString<PATH_MAX> P("/");
+    llvm::sys::path::append(P, "pkg/llvm");
+    llvm::sys::path::append(P, D.ResourceDir);
+    llvm::sys::path::append(P, "lib");
+    if (llvm::sys::fs::exists(P)) {
+      CmdArgs.push_back("-L");
+      CmdArgs.push_back(Args.MakeArgString(P));
+    }
+  }
+
+  if (!D.SysRoot.empty()) {
+    SmallString<PATH_MAX> P(D.SysRoot);
+    llvm::sys::path::append(P, "lib");
+    if (llvm::sys::fs::exists(P)) {
+      CmdArgs.push_back("-L");
+      CmdArgs.push_back(Args.MakeArgString(P));
+    }
+  } else {
+    SmallString<PATH_MAX> P("/sysroot");
+    llvm::sys::path::append(P, "lib");
+    if (llvm::sys::fs::exists(P)) {
+      CmdArgs.push_back("-L");
+      CmdArgs.push_back(Args.MakeArgString(P));
     }
   }
 
@@ -259,9 +296,38 @@ Twizzler::Twizzler(const Driver &D, const llvm::Triple &Triple,
   getProgramPaths().push_back(getDriver().Dir);
 
   if (!D.SysRoot.empty()) {
+    {
     SmallString<128> P(D.SysRoot);
     llvm::sys::path::append(P, "lib");
     getFilePaths().push_back(std::string(P));
+    }
+
+    {
+    SmallString<128> P(D.SysRoot);
+    llvm::sys::path::append(P, "pkg/llvm/bin");
+    getProgramPaths().push_back(std::string(P));
+    }
+
+    {
+    SmallString<128> P(D.SysRoot);
+    llvm::sys::path::append(P, "pkg/lld/bin");
+    getProgramPaths().push_back(std::string(P));
+    }
+    
+    SmallString<128> P(D.SysRoot);
+    llvm::sys::path::append(P, "bin");
+    getProgramPaths().push_back(std::string(P));
+  } else {
+    {
+    SmallString<128> P("/pkg/llvm/bin");
+    getProgramPaths().push_back(std::string(P));
+    }
+    {
+    SmallString<128> P("/pkg/lld/bin");
+    getProgramPaths().push_back(std::string(P));
+    }
+    SmallString<128> P("/sysroot/bin");
+    getProgramPaths().push_back(std::string(P));
   }
 
   auto FilePaths = [&](const Multilib &M) -> std::vector<std::string> {
@@ -394,8 +460,38 @@ void Twizzler::AddClangSystemIncludeArgs(const ArgList &DriverArgs,
     return;
 
   if (!DriverArgs.hasArg(options::OPT_nobuiltininc)) {
+    fprintf(stderr, "Adding builtin include path: %s\n", D.ResourceDir.c_str());
+    fprintf(stderr, "Adding builtin include path: %s\n", D.Dir.c_str());
     SmallString<128> P(D.ResourceDir);
     llvm::sys::path::append(P, "include");
+    addSystemInclude(DriverArgs, CC1Args, P);
+
+    if (!D.SysRoot.empty()) {
+      SmallString<PATH_MAX> P(D.SysRoot);
+      llvm::sys::path::append(P, "pkg/llvm");
+      llvm::sys::path::append(P, D.ResourceDir);
+      llvm::sys::path::append(P, "include");
+      fprintf(stderr, "Adding builtin include path: %s\n", P.c_str());
+      addSystemInclude(DriverArgs, CC1Args, P);
+    } else {
+      SmallString<PATH_MAX> P("/");
+      llvm::sys::path::append(P, "pkg/llvm");
+      llvm::sys::path::append(P, D.ResourceDir);
+      llvm::sys::path::append(P, "include");
+      fprintf(stderr, "Adding builtin include path: %s\n", P.c_str());
+      addSystemInclude(DriverArgs, CC1Args, P);
+    }
+  }
+
+  if (!D.SysRoot.empty()) {
+    SmallString<PATH_MAX> P(D.SysRoot);
+    llvm::sys::path::append(P, "include");
+    fprintf(stderr, "Adding builtin include path: %s\n", P.c_str());
+    addSystemInclude(DriverArgs, CC1Args, P);
+  } else {
+    SmallString<PATH_MAX> P("/sysroot");
+    llvm::sys::path::append(P, "include");
+    fprintf(stderr, "Adding builtin include path: %s\n", P.c_str());
     addSystemInclude(DriverArgs, CC1Args, P);
   }
 

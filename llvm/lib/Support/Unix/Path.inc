@@ -325,14 +325,30 @@ std::string getMainExecutable(const char *argv0, void *MainAddr) {
   // Use dladdr to get executable path if available.
   Dl_info DLInfo;
   int err = dladdr(MainAddr, &DLInfo);
+#if !defined(__Twizzler__)
   if (err == 0)
     return "";
-
   // If the filename is a symlink, we need to resolve and return the location of
   // the actual executable.
   char link_path[PATH_MAX];
   if (realpath(DLInfo.dli_fname, link_path))
     return link_path;
+#else
+  // On Twizzler, dladdr/dlapi_reverse may not yet provide path information.
+  // Try it, but fall back to argv0-based resolution when it fails.
+  if (err != 0) {
+    char link_path[PATH_MAX];
+    if (realpath(DLInfo.dli_fname, link_path))
+      return link_path;
+  }
+  // Fall back to argv0 when dladdr cannot provide the executable path.
+  if (argv0 && *argv0) {
+    char exe_path[PATH_MAX];
+    if (realpath(argv0, exe_path))
+      return std::string(exe_path);
+    return std::string(argv0);
+  }
+#endif
 #else
 #error GetMainExecutable is not implemented on this host yet.
 #endif
