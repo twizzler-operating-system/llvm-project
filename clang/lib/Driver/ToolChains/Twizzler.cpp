@@ -62,7 +62,6 @@ void twizzler::Linker::ConstructJob(Compilation &C, const JobAction &JA,
   CmdArgs.push_back("norelro");
 
   const char *Exec = Args.MakeArgString(ToolChain.GetLinkerPath());
-  fprintf(stderr, "found linker at %s\n", Exec);
   if (llvm::sys::path::filename(Exec).equals_insensitive("ld.lld") ||
       llvm::sys::path::stem(Exec).equals_insensitive("ld.lld")) {
     CmdArgs.push_back("-z");
@@ -161,6 +160,7 @@ void twizzler::Linker::ConstructJob(Compilation &C, const JobAction &JA,
       CmdArgs.push_back(Args.MakeArgString(P));
     }
   } else {
+    {
     SmallString<PATH_MAX> P("/sysroot");
     llvm::sys::path::append(P, "lib");
     if (llvm::sys::fs::exists(P)) {
@@ -168,6 +168,23 @@ void twizzler::Linker::ConstructJob(Compilation &C, const JobAction &JA,
       CmdArgs.push_back(Args.MakeArgString(P));
     }
   }
+
+  {
+    SmallString<PATH_MAX> P("/initrd");
+    if (llvm::sys::fs::exists(P)) {
+      CmdArgs.push_back("-L");
+      CmdArgs.push_back(Args.MakeArgString(P));
+    }
+  }
+
+  {
+    SmallString<PATH_MAX> P("/pkg/llvm/lib/clang/21/");
+    if (llvm::sys::fs::exists(P)) {
+      CmdArgs.push_back("-L");
+      CmdArgs.push_back(Args.MakeArgString(P));
+    }
+  }
+}
 
   if (Args.hasArg(options::OPT_static))
     CmdArgs.push_back("-Bstatic");
@@ -195,18 +212,30 @@ void twizzler::Linker::ConstructJob(Compilation &C, const JobAction &JA,
   CmdArgs.push_back("-o");
   CmdArgs.push_back(Output.getFilename());
 
+  auto AddCrtObj = [&](std::string P) {
+    if(llvm::sys::fs::exists(P))
+      CmdArgs.push_back(Args.MakeArgString(P));
+    else {
+      if(D.SysRoot.empty())
+        P = "/sysroot/lib/" + P;
+      else
+        P = D.SysRoot + "/lib/" + P;
+      if(llvm::sys::fs::exists(P))
+        CmdArgs.push_back(Args.MakeArgString(P));
+      else
+        CmdArgs.push_back(Args.MakeArgString(ToolChain.GetFilePath(P.c_str()))); 
+    }
+  };
+
   if (!Args.hasArg(options::OPT_nostdlib, options::OPT_nodefaultlibs,
                    options::OPT_r)) {
-    CmdArgs.push_back(Args.MakeArgString(ToolChain.GetFilePath("crti.o")));
+    AddCrtObj("crti.o");
     if (Args.hasArg(options::OPT_static))
-      CmdArgs.push_back(Args.MakeArgString(ToolChain.GetFilePath("crtbegin.o")));
+      AddCrtObj("crtbegin.o");
     else
-      CmdArgs.push_back(Args.MakeArgString(ToolChain.GetFilePath("crtbeginS.o")));
+      AddCrtObj("crtbeginS.o");
     if (!Args.hasArg(options::OPT_shared)) {
-        //if (Args.hasArg(options::OPT_static))
-            CmdArgs.push_back(Args.MakeArgString(ToolChain.GetFilePath("Scrt1.o")));
-        //else
-        //    CmdArgs.push_back(Args.MakeArgString(ToolChain.GetFilePath("crt1.o")));
+        AddCrtObj("Scrt1.o");
     }
   }
 
@@ -266,10 +295,10 @@ void twizzler::Linker::ConstructJob(Compilation &C, const JobAction &JA,
     }
 
     if (Args.hasArg(options::OPT_static)) {
-      CmdArgs.push_back(Args.MakeArgString(ToolChain.GetFilePath("crtend.o")));
+      AddCrtObj("crtend.o");
     }else
-      CmdArgs.push_back(Args.MakeArgString(ToolChain.GetFilePath("crtendS.o")));
-    CmdArgs.push_back(Args.MakeArgString(ToolChain.GetFilePath("crtn.o")));
+      AddCrtObj("crtendS.o");
+    AddCrtObj("crtn.o");
   }
   CmdArgs.push_back("-T");
   if (!D.SysRoot.empty()) {
@@ -278,7 +307,7 @@ void twizzler::Linker::ConstructJob(Compilation &C, const JobAction &JA,
     llvm::sys::path::append(P, "twizzler.ld");
     CmdArgs.push_back(Args.MakeArgString(P));
   } else {
-    SmallString<128> P(D.Dir);
+    SmallString<128> P("/sysroot");
     llvm::sys::path::append(P, "lib");
     llvm::sys::path::append(P, "twizzler.ld");
     CmdArgs.push_back(Args.MakeArgString(P));
@@ -295,13 +324,13 @@ Twizzler::Twizzler(const Driver &D, const llvm::Triple &Triple,
     : ToolChain(D, Triple, Args) {
   getProgramPaths().push_back(getDriver().Dir);
 
+  auto AddLibPath = [&](std::string P) {
+    if(llvm::sys::fs::exists(P))
+    getLibraryPaths().push_back(P);
+  };
   if (!D.SysRoot.empty()) {
-    {
-    SmallString<128> P(D.SysRoot);
-    llvm::sys::path::append(P, "lib");
-    getFilePaths().push_back(std::string(P));
-    }
-
+    AddLibPath(D.SysRoot + "/lib");
+    AddLibPath(D.SysRoot + "/pkg/llvm/lib/clang/21/lib/" + Triple.str());
     {
     SmallString<128> P(D.SysRoot);
     llvm::sys::path::append(P, "pkg/llvm/bin");
@@ -317,7 +346,23 @@ Twizzler::Twizzler(const Driver &D, const llvm::Triple &Triple,
     SmallString<128> P(D.SysRoot);
     llvm::sys::path::append(P, "bin");
     getProgramPaths().push_back(std::string(P));
+
+    SmallString<128> PkgDir(D.SysRoot);
+    llvm::sys::path::append(PkgDir, "pkg");
+    std::error_code EC;
+    for (llvm::sys::fs::directory_iterator DirIt(PkgDir, EC), DirEnd; DirIt != DirEnd && !EC; DirIt.increment(EC)) {
+      if (llvm::sys::fs::is_directory(DirIt->path())) {
+        SmallString<128> LibDir(DirIt->path());
+        llvm::sys::path::append(LibDir, "lib");
+        AddLibPath(std::string(LibDir));
+      }
+    }
   } else {
+
+    AddLibPath("/sysroot/lib");
+    AddLibPath("/pkg/llvm/lib/clang/21/lib/" + Triple.str());
+    AddLibPath("/initrd");
+
     {
     SmallString<128> P("/pkg/llvm/bin");
     getProgramPaths().push_back(std::string(P));
@@ -326,8 +371,21 @@ Twizzler::Twizzler(const Driver &D, const llvm::Triple &Triple,
     SmallString<128> P("/pkg/lld/bin");
     getProgramPaths().push_back(std::string(P));
     }
+    {
     SmallString<128> P("/sysroot/bin");
     getProgramPaths().push_back(std::string(P));
+    }
+    SmallString<128> PkgDir("/");
+    llvm::sys::path::append(PkgDir, "pkg");
+    std::error_code EC;
+    for (llvm::sys::fs::directory_iterator DirIt(PkgDir, EC), DirEnd; DirIt != DirEnd && !EC; DirIt.increment(EC)) {
+      if (llvm::sys::fs::is_directory(DirIt->path())) {
+        SmallString<128> LibDir(DirIt->path());
+        llvm::sys::path::append(LibDir, "lib");
+        AddLibPath(std::string(LibDir));
+      }
+    }
+
   }
 
   auto FilePaths = [&](const Multilib &M) -> std::vector<std::string> {
@@ -460,8 +518,6 @@ void Twizzler::AddClangSystemIncludeArgs(const ArgList &DriverArgs,
     return;
 
   if (!DriverArgs.hasArg(options::OPT_nobuiltininc)) {
-    fprintf(stderr, "Adding builtin include path: %s\n", D.ResourceDir.c_str());
-    fprintf(stderr, "Adding builtin include path: %s\n", D.Dir.c_str());
     SmallString<128> P(D.ResourceDir);
     llvm::sys::path::append(P, "include");
     addSystemInclude(DriverArgs, CC1Args, P);
@@ -471,14 +527,12 @@ void Twizzler::AddClangSystemIncludeArgs(const ArgList &DriverArgs,
       llvm::sys::path::append(P, "pkg/llvm");
       llvm::sys::path::append(P, D.ResourceDir);
       llvm::sys::path::append(P, "include");
-      fprintf(stderr, "Adding builtin include path: %s\n", P.c_str());
       addSystemInclude(DriverArgs, CC1Args, P);
     } else {
       SmallString<PATH_MAX> P("/");
       llvm::sys::path::append(P, "pkg/llvm");
       llvm::sys::path::append(P, D.ResourceDir);
       llvm::sys::path::append(P, "include");
-      fprintf(stderr, "Adding builtin include path: %s\n", P.c_str());
       addSystemInclude(DriverArgs, CC1Args, P);
     }
   }
@@ -486,12 +540,10 @@ void Twizzler::AddClangSystemIncludeArgs(const ArgList &DriverArgs,
   if (!D.SysRoot.empty()) {
     SmallString<PATH_MAX> P(D.SysRoot);
     llvm::sys::path::append(P, "include");
-    fprintf(stderr, "Adding builtin include path: %s\n", P.c_str());
     addSystemInclude(DriverArgs, CC1Args, P);
   } else {
     SmallString<PATH_MAX> P("/sysroot");
     llvm::sys::path::append(P, "include");
-    fprintf(stderr, "Adding builtin include path: %s\n", P.c_str());
     addSystemInclude(DriverArgs, CC1Args, P);
   }
 
